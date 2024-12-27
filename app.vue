@@ -10,9 +10,14 @@
     <p @click="animationPreference = animationPreference ? false : true" class="dark:text-white text-black fixed bottom-0 right-0 lg:p-4 p-2 lg:text-base sm:text-xs text-xs dark:opacity-20 opacity-55 cursor-cell hover:opacity-90 dark:hover:opacity-90">Turn {{ animationPreference ? "off" : "on" }} animation</p>
   
     <div class="flex h-screen items-center justify-center">
-      <p class="text-white font-thin m-3 text-lg">add new:</p>
-      <div class="flex flex-row">
-        <input placeholder="add text..." class="text-white focus-visible:outline-none p-1 placeholder:text-white/20 rounded-lg backdrop-blur-sm bg-white/10" type="text">
+      <div class="flex flex-row items-center p-4 bg-white/5 rounded-xl backdrop-blur-sm brightness-110 shadow-xl" v-if="!showInput">
+        <p class="text-white font-thin m-3 text-lg">{{ steps[index] }}</p>
+        <input v-model="response" v-if="index != 0" placeholder="add text..." class="text-white focus-visible:outline-none p-1 placeholder:text-white/20 placeholder:font-thin rounded-lg backdrop-blur-sm bg-white/10 autofill:bg-white/10" type="text">
+        <Icon class="text-white size-7 mx-1 hover:cursor-pointer" mode="svg" name="ic:twotone-arrow-circle-right" @click="index ==3  ? showInput = true : index++" />
+      </div>
+      <div class="flex flex-row items-center p-4 bg-white/5 rounded-xl backdrop-blur-sm brightness-110 shadow-xl" v-if="showInput">
+        <p class="text-white font-thin m-3 text-lg">{{ steps[4] }}</p>
+        <input placeholder="add text..." class="text-white focus-visible:outline-none p-1 placeholder:text-white/20 placeholder:font-thin rounded-lg backdrop-blur-sm bg-white/10" type="text">
         <Icon class="text-white size-7 m-2 hover:cursor-pointer" mode="svg" name="ic:twotone-add-box" />
       </div>
     </div>
@@ -25,6 +30,18 @@
 
 <script lang="ts" setup>
 const { isDark, toggleDarkMode, isDarkMode } = useDarkMode();
+
+//onboarding logic
+const showInput = ref(false)
+const index = ref(0)
+const steps = ref<{ [key: number]: string }>({
+  0: "Welcome to the previous year! :)",
+  1: "name",
+  2: "x/twitter username",
+  3: "github username",
+  4: "add new"
+})
+const response = ref("")
 
 //background svg logic
 const strokeColor = computed(() => (isDark.value ? 'fff' : '00edff'));
