@@ -9,20 +9,34 @@
     </button>
     <p @click="animationPreference = animationPreference ? false : true" class="dark:text-white text-black fixed bottom-0 right-0 lg:p-4 p-2 lg:text-base sm:text-xs text-xs dark:opacity-20 opacity-55 cursor-cell hover:opacity-90 dark:hover:opacity-90">Turn {{ animationPreference ? "off" : "on" }} animation</p>
   
-    <div class="flex h-screen items-center justify-center">
+    <div class="flex flex-col gap-4 h-screen items-center justify-center">
+      
+      <div class="flex flex-col items-center p-2 bg-white/5 rounded-xl backdrop-blur-sm brightness-110 shadow-xl m-4" v-if="userDetails.name != ''">
+        <p class="text-white font-thin m-3 text-xl italic">summary</p>
+        <p class="text-white font-thin m-3 text-md opacity-65">name: {{ userDetails.name }}</p>
+        <p v-if="userDetails.twitter != ''" class="text-white font-thin m-3 text-md opacity-65">twitter: {{ userDetails.twitter }}</p>
+        <p v-if="userDetails.github != ''" class="text-white font-thin m-3 text-md opacity-65">github: {{ userDetails.github }}</p>
+        <p v-if="achievements.length != 0" class="text-white font-thin m-3 text-xl italic">achievements</p>
+        <p v-for="achievement in achievements" class="text-white font-thin m-3 text-md opacity-65">• {{ achievement }}</p>
+      </div>
+
+
       <div class="flex flex-row items-center p-4 bg-white/5 rounded-xl backdrop-blur-sm brightness-110 shadow-xl" v-if="!showInput">
         <p class="text-white font-thin m-3 text-lg">{{ steps[index] }}</p>
-        <input v-model="response" v-if="index != 0" placeholder="add text..." class="text-white focus-visible:outline-none p-1 placeholder:text-white/20 placeholder:font-thin rounded-lg backdrop-blur-sm bg-white/10 autofill:bg-white/10" type="text">
-        <Icon class="text-white size-7 mx-1 hover:cursor-pointer" mode="svg" name="ic:twotone-arrow-circle-right" @click="index ==3  ? showInput = true : index++" />
+        <input v-model="response" v-if="index != 0" placeholder="add text..." class="text-white focus-visible:outline-none p-1 placeholder:text-white/20 placeholder:font-thin placeholder:italic rounded-lg backdrop-blur-sm bg-white/10 autofill:bg-white/10" type="text"  @keyup.enter="index == 3  ? (showInput = true, insertDetail(response)) : insertDetail(response)"/>
+        <Icon class="text-white size-7 mx-1 hover:cursor-pointer" mode="svg" name="ic:twotone-arrow-circle-right" @click="index == 3  ? (showInput = true, insertDetail(response)) : insertDetail(response)"/>
       </div>
+
       <div class="flex flex-row items-center p-4 bg-white/5 rounded-xl backdrop-blur-sm brightness-110 shadow-xl" v-if="showInput">
         <p class="text-white font-thin m-3 text-lg">{{ steps[4] }}</p>
-        <input placeholder="add text..." class="text-white focus-visible:outline-none p-1 placeholder:text-white/20 placeholder:font-thin rounded-lg backdrop-blur-sm bg-white/10" type="text">
-        <Icon class="text-white size-7 m-2 hover:cursor-pointer" mode="svg" name="ic:twotone-add-box" />
+        <input v-model="response" placeholder="got an internship..." class="text-white focus-visible:outline-none p-1 placeholder:text-white/20 placeholder:font-thin placeholder:italic rounded-lg backdrop-blur-sm bg-white/10" type="text" @keyup.enter="insertAchievement(response)"/>
+        <Icon class="text-white size-7 m-2 hover:cursor-pointer" mode="svg" name="ic:twotone-add-box" @click="insertAchievement(response)"/>
       </div>
+
+
+
+
     </div>
-    
-  
   
   
   </div>
@@ -30,6 +44,26 @@
 
 <script lang="ts" setup>
 const { isDark, toggleDarkMode, isDarkMode } = useDarkMode();
+
+// user details logic
+const userDetails = ref({
+  name: "",
+  twitter: "",
+  github: "",
+})
+
+const achievements = ref<string[]>([])
+
+const insertAchievement = (achievement: string) => {
+  if (achievement == "") {
+    return
+  }
+  if (achievements.value.length > 10){
+    return
+  }
+  achievements.value.push(achievement)
+  response.value = ""
+}
 
 //onboarding logic
 const showInput = ref(false)
@@ -42,6 +76,30 @@ const steps = ref<{ [key: number]: string }>({
   4: "add new"
 })
 const response = ref("")
+
+const insertDetail = (detail: string) => {
+  
+  if (index.value == 0) {
+    
+  } else if (index.value == 1) {
+    if (detail == "") {
+      return
+    }
+    userDetails.value.name = detail
+  } else if (index.value == 2) {
+    if (detail == "") {
+      return
+    }
+    userDetails.value.twitter = detail
+  } else if (index.value == 3) {
+    if (detail == "") {
+      return
+    }
+    userDetails.value.github = detail
+  }
+  response.value = ""
+  index.value++
+}
 
 //background svg logic
 const strokeColor = computed(() => (isDark.value ? 'fff' : '00edff'));
