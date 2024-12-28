@@ -11,13 +11,13 @@
   
     <div class="flex flex-col gap-4 h-screen items-center justify-center">
       
-      <div class="flex flex-col items-center p-2 bg-white/5 rounded-xl backdrop-blur-sm brightness-110 shadow-xl m-4" v-if="userDetails.name != ''">
-        <p class="text-white font-thin m-3 text-xl italic">summary</p>
-        <p class="text-white font-thin m-3 text-md opacity-65">name: {{ userDetails.name }}</p>
-        <p v-if="userDetails.twitter != ''" class="text-white font-thin m-3 text-md opacity-65">twitter: {{ userDetails.twitter }}</p>
-        <p v-if="userDetails.github != ''" class="text-white font-thin m-3 text-md opacity-65">github: {{ userDetails.github }}</p>
-        <p v-if="achievements.length != 0" class="text-white font-thin m-3 text-xl italic">achievements</p>
-        <p v-for="achievement in achievements" class="text-white font-thin m-3 text-md opacity-65">• {{ achievement }}</p>
+      <div class="summary flex flex-col items-center p-2 bg-white/5 rounded-xl backdrop-blur-sm brightness-110 shadow-xl m-3 min-w-60 max-h-96 overflow-auto" v-if="userDetails.name != ''">
+        <p class="text-white font-thin m-2 text-xl italic">summary</p>
+        <p class="text-white font-thin m-2 text-md opacity-65">name: {{ userDetails.name }}</p>
+        <p v-if="userDetails.twitter != ''" class="text-white font-thin m-2 text-md opacity-65">twitter: {{ userDetails.twitter }}</p>
+        <p v-if="userDetails.github != ''" class="text-white font-thin m-2 text-md opacity-65">github: {{ userDetails.github }}</p>
+        <p v-if="achievements.length != 0" class="text-white font-thin m-2 text-xl italic">achievements</p>
+        <p v-for="achievement in achievements" class="text-white font-thin m-2 text-md opacity-65">• {{ achievement }}</p>
       </div>
 
 
@@ -131,5 +131,9 @@ const animationPreference = ref(true);
   100% {
     background-position: 00% 100%;
   }
+}
+
+.summary::-webkit-scrollbar {
+  display: none;
 }
 </style>
