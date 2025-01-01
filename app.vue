@@ -13,18 +13,19 @@
 
       <p v-if="finalPage" class="text-white font-white font-thin text-3xl p-2 m-2">your 2024</p>
       
-      <div class="summary flex flex-col items-center p-2 bg-white/5 rounded-xl backdrop-blur-sm brightness-110 shadow-xl m-3 min-w-60 max-h-96 overflow-auto" v-if="userDetails.name != ''">
 
-
-        <p class="text-white font-thin m-2 text-xl italic">summary</p>
-        <p class="text-white font-thin m-2 text-md opacity-65">name: {{ userDetails.name }}</p>
-        <p v-if="userDetails.twitter != ''" class="text-white font-thin m-2 text-md opacity-65">twitter: {{ userDetails.twitter }}</p>
-        <p v-if="userDetails.github != ''" class="text-white font-thin m-2 text-md opacity-65">github: {{ userDetails.github }}</p>
-        <p v-if="achievements.length != 0" class="text-white font-thin m-2 text-xl italic">achievements</p>
-        <p v-for="achievement in achievements" class="text-white font-thin m-2 text-md opacity-65">• {{ achievement }}</p>
+      <div ref="captureArea">
+        <div :style="capturing ? svgGridStyle: false" class="summary flex flex-col items-center p-2 bg-white/5 rounded-xl backdrop-blur-sm brightness-110 shadow-xl m-3 min-w-60 max-h-96 overflow-auto" v-if="userDetails.name != ''">
+          <p class="text-white font-thin m-2 text-xl italic">summary</p>
+          <p class="text-white font-thin m-2 text-md opacity-65">name: {{ userDetails.name }}</p>
+          <p v-if="userDetails.twitter != ''" class="text-white font-thin m-2 text-md opacity-65">twitter: {{ userDetails.twitter }}</p>
+          <p v-if="userDetails.github != ''" class="text-white font-thin m-2 text-md opacity-65">github: {{ userDetails.github }}</p>
+          <p v-if="achievements.length != 0" class="text-white font-thin m-2 text-xl italic">achievements</p>
+          <p v-for="achievement in achievements" class="text-white font-thin m-2 text-md opacity-65">• {{ achievement }}</p>
+        </div>
       </div>
-
-      <button v-if="finalPage" class="text-white font-thin backdrop-blur-sm py-3 px-4 rounded-xl min-w-60 shadow-lg brightness-110 bg-white/5">get image</button>
+        
+      <button v-if="finalPage" @click="captureImage" class="text-white font-thin backdrop-blur-sm py-3 px-4 rounded-xl min-w-60 shadow-lg brightness-110 bg-white/5">get image</button>
 
       <div class="flex flex-row items-center p-4 bg-white/5 rounded-xl backdrop-blur-sm brightness-110 shadow-xl" v-if="!showInput">
         <p class="text-white font-thin m-3 text-lg">{{ steps[index] }}</p>
@@ -51,7 +52,58 @@
 </template>
 
 <script lang="ts" setup>
+// import html2canvas from 'html2canvas';
+import domtoimage from 'dom-to-image'
+
 const { isDark, toggleDarkMode, isDarkMode } = useDarkMode();
+
+//capture logic
+const capturing=ref(false)
+const captureArea = ref(null);
+
+const captureImage = async () => {
+  capturing.value = true
+  if (captureArea.value) {
+    try {
+      // Convert DOM to image as a Blob
+      const blob = await domtoimage.toBlob(captureArea.value);
+
+      // Use Clipboard API to write the image to the clipboard
+      if (navigator.clipboard && navigator.clipboard.write) {
+        const clipboardItem = new ClipboardItem({ 'image/png': blob });
+        await navigator.clipboard.write([clipboardItem]);
+
+        alert('Image copied to clipboard!');
+      } else {
+        console.error('Clipboard API not supported in your browser.');
+        alert('Your browser does not support copying images to the clipboard.');
+      }
+    } catch (error) {
+      console.error('Error capturing the image:', error);
+    }
+  }
+  capturing.value = false
+};
+
+// const captureArea = ref<HTMLElement | null>(null)
+
+// const captureImage = async () => {
+//   if (captureArea.value) {
+//     try {
+//       const canvas = await html2canvas(captureArea.value);
+//       const image = canvas.toDataURL("image/png");
+
+//       //trigger download or display the image
+//       const link = document.createElement("a");
+//       link.href = image;
+//       link.download = "newyearnewme.png";
+//       link.click();
+//     }
+//     catch (error) {
+//       console.error("Error capturing the image :", error);
+//     }
+//   }
+// }
 
 //final page logic
 const finalPage = ref(false)
