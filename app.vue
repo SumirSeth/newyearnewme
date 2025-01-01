@@ -14,10 +14,10 @@
       <p v-if="finalPage" class="text-white font-white font-thin text-3xl p-2 m-2">your 2024</p>
       
 
-      <div ref="captureArea" class="capture-container">
+      <div v-if="!finalPage">
         <div :style="capturing ? svgGridStyle: false" class="summary flex flex-col items-center p-2 bg-white/5 rounded-xl backdrop-blur-sm brightness-110 shadow-xl m-3 min-w-60 max-h-96 overflow-auto" v-if="userDetails.name != ''">
-          <p class="text-white font-thin m-2 text-xl italic">summary</p>
-          <NuxtImg v-if="finalPage" :src="profilePic" class="rounded-full w-24 h-24 m-2 bg-white/5 brightness-110 shadow-xl" alt="profile picture"/>
+          <p class="text-white font-thin m-2 text-xl italic">summary</p> 
+          <NuxtImg v-if="finalPage" :src="profilePic" class="rounded-full w-14 h-14 m-2 bg-white/5 brightness-110 shadow-xl" alt="profile picture"/>
           <p class="text-white font-thin m-2 text-md opacity-65">name: {{ userDetails.name }}</p>
           <p v-if="userDetails.twitter != ''" class="text-white font-thin m-2 text-md opacity-65">twitter: {{ userDetails.twitter }}</p>
           <p v-if="userDetails.github != ''" class="text-white font-thin m-2 text-md opacity-65">github: {{ userDetails.github }}</p>
@@ -25,10 +25,33 @@
           <p v-for="achievement in achievements" class="text-white font-thin m-2 text-md opacity-65">• {{ achievement }}</p>
         </div>
       </div>
-        
+      
+      <div v-else ref="captureArea" class="capture-container">
+        <div :style="capturing ? svgGridStyle: false" class="summary flex flex-col items-center p-2 bg-white/5 rounded-xl backdrop-blur-sm brightness-110 shadow-xl m-3 min-w-60 max-h-96 overflow-auto" v-if="userDetails.name != ''">
+          <div class="grid grid-cols-2 items-center justify-center justify-items-center">
+            <NuxtImg v-if="finalPage" :src="profilePic" class="rounded-full w-16 h-16 m-2 bg-white/5 brightness-110 shadow-xl" alt="profile picture"/>
+            <div>
+              <p class="text-white font-bold m-2 text-md opacity-65">{{ userDetails.name }}</p>
+              <p v-if="userDetails.twitter != ''" class="text-white font-thin m-2 text-md opacity-65">twitter: {{ userDetails.twitter }}</p>
+              <p v-if="userDetails.github != ''" class="text-white font-thin m-2 text-md opacity-65">github: {{ userDetails.github }}</p>
+            </div>
+          </div>
+          <!-- <p v-if="achievements.length != 0" class="text-white font-thin m-2 text-xl italic">achievements</p> -->
+          <div class="mt-4">
+            <p v-for="achievement in achievements" class="text-white font-thin m-2 text-md opacity-65">• {{ achievement }}</p>
+          </div>
+        </div>
+      </div>
+
+
       <button v-if="finalPage" @click="captureImage" class="text-white font-thin backdrop-blur-sm py-3 px-4 rounded-xl min-w-60 shadow-lg brightness-110 bg-white/5">get image</button>
+      <button v-if="finalPage" @click="(finalPage = false, showInput=false, userDetails.name = '', userDetails.twitter = '', userDetails.github = '', achievements = [], index=0, response = '')" class="text-white font-thin backdrop-blur-sm py-3 px-4 rounded-xl min-w-60 shadow-lg brightness-110 bg-white/5">reset</button>
       <div class="flex flex-row items-center p-4 bg-white/5 rounded-xl backdrop-blur-sm brightness-110 shadow-xl" v-if="!showInput">
-        <p class="text-white font-thin m-3 text-lg">{{ steps[index] }}</p>
+        <div v-if="index == 0" class="flex flex-col items-center ">
+          <p class="text-white font-thin m-3 text-lg">{{ steps[index] }}</p>
+          <p  class="text-white font-thin m-3 text-lg">Easy way to share your year's wrapped.</p>
+        </div>
+        <p v-else class="text-white font-thin m-3 text-lg">{{ steps[index] }}</p>
         <input v-model="response" v-if="index != 0" placeholder="add text..." class="text-white focus-visible:outline-none p-1 placeholder:text-white/20 placeholder:font-thin placeholder:italic rounded-lg backdrop-blur-sm bg-white/10 autofill:bg-white/10" type="text"  @keyup.enter="index == 3  ? (showInput = true, insertDetail(response)) : insertDetail(response)"/>
         <Icon class="text-white size-7 mx-1 hover:cursor-pointer" mode="svg" name="ic:twotone-arrow-circle-right" @click="(index == 3  ? (showInput = true, insertDetail(response)) : insertDetail(response))"/>
       </div>
@@ -159,7 +182,7 @@ const captureImage = async () => {
   try {
     const dataUrl = await domtoimage.toPng(captureArea.value, {
       quality: 2.0,
-      bgcolor: '#002d33',
+      bgcolor: `${isDark.value ? '#002d33' : '#3a969f'}`,
       style: {
         'transform': 'scale(1)',
       },
