@@ -14,7 +14,7 @@
       <p v-if="finalPage" class="text-white font-white font-thin text-3xl p-2 m-2">your 2024</p>
       
 
-      <div ref="captureArea">
+      <div ref="captureArea" class="capture-container">
         <div :style="capturing ? svgGridStyle: false" class="summary flex flex-col items-center p-2 bg-white/5 rounded-xl backdrop-blur-sm brightness-110 shadow-xl m-3 min-w-60 max-h-96 overflow-auto" v-if="userDetails.name != ''">
           <p class="text-white font-thin m-2 text-xl italic">summary</p>
           <NuxtImg v-if="finalPage" :src="profilePic" class="rounded-full w-24 h-24 m-2 bg-white/5 brightness-110 shadow-xl" alt="profile picture"/>
@@ -27,9 +27,6 @@
       </div>
         
       <button v-if="finalPage" @click="captureImage" class="text-white font-thin backdrop-blur-sm py-3 px-4 rounded-xl min-w-60 shadow-lg brightness-110 bg-white/5">get image</button>
-      {{ profilePic }}
-      <br>
-      {{ userDetails.github }}
       <div class="flex flex-row items-center p-4 bg-white/5 rounded-xl backdrop-blur-sm brightness-110 shadow-xl" v-if="!showInput">
         <p class="text-white font-thin m-3 text-lg">{{ steps[index] }}</p>
         <input v-model="response" v-if="index != 0" placeholder="add text..." class="text-white focus-visible:outline-none p-1 placeholder:text-white/20 placeholder:font-thin placeholder:italic rounded-lg backdrop-blur-sm bg-white/10 autofill:bg-white/10" type="text"  @keyup.enter="index == 3  ? (showInput = true, insertDetail(response)) : insertDetail(response)"/>
@@ -120,6 +117,8 @@ const insertAchievement = (achievement: string) => {
 //github profile logic
 const username = computed(() => userDetails.value.github)
 const profilePic = ref("")
+const imageLoaded = ref(false);
+const profileImage = ref<HTMLImageElement | null>(null);
 
 const fetchProfilePicture = async () => {
   if (!username.value) {
@@ -132,7 +131,14 @@ const fetchProfilePicture = async () => {
     const data = await response.json();
 
     if (response.ok) {
-      profilePic.value = data.avatar_url;
+      // Convert image to base64 first
+      const imgResponse = await fetch(data.avatar_url);
+      const blob = await imgResponse.blob();
+      profilePic.value = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.readAsDataURL(blob);
+      });
     } else {
       alert('User not found');
     }
@@ -147,50 +153,32 @@ const capturing=ref(false)
 const captureArea = ref<HTMLElement | null>(null);
 
 const captureImage = async () => {
-  capturing.value = true
-  if (captureArea.value) {
-    try {
-      // Wait for all images in the capture area to load
-      const images = captureArea.value.getElementsByTagName('img');
-      await Promise.all(Array.from(images).map(img => {
-        if (img.complete) return Promise.resolve();
-        return new Promise((resolve, reject) => {
-          img.onload = resolve;
-          img.onerror = reject;
-          // Add crossOrigin attribute if images are from different domain
-          img.crossOrigin = 'anonymous';
-        });
-      }));
+  
 
-      // Convert DOM to image with specific options
-      const blob = await domtoimage.toBlob(captureArea.value, {
-        quality: 1.0,
-        bgcolor: '#fff',
-        imagePlaceholder: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
-        cacheBust: true
-      });
-
-      // Rest of your clipboard and download code
-      if (navigator.clipboard && navigator.clipboard.write) {
-        const clipboardItem = new ClipboardItem({ 'image/png': blob });
-        await navigator.clipboard.write([clipboardItem]);
-        alert('Image copied to clipboard!');
-      } else {
-        console.error('Clipboard API not supported in your browser.');
-        alert('Your browser does not support copying images to the clipboard.');
+  capturing.value = true;
+  try {
+    const dataUrl = await domtoimage.toPng(captureArea.value, {
+      quality: 2.0,
+      bgcolor: '#002d33',
+      style: {
+        'transform': 'scale(1)',
+      },
+      filter: (node) => {
+        return node.tagName !== 'BUTTON';
       }
-      
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = 'screenshot.png';
-      link.click();
-      alert('Image is being downloaded!');
-    } catch (error) {
-      console.error('Error capturing the image:', error);
-      alert('Error capturing the image. Make sure all images are loaded properly.');
-    }
+    });
+
+    // Create download link
+    const link = document.createElement('a');
+    link.download = 'my-achievements.png';
+    link.href = dataUrl;
+    link.click();
+  } catch (error) {
+    console.error('Failed to capture image:', error);
+    alert('Failed to capture image. Please try again.');
+  } finally {
+    capturing.value = false;
   }
-  capturing.value = false
 };
 
 
@@ -236,4 +224,5 @@ const animationPreference = ref(true);
 .summary::-webkit-scrollbar {
   display: none;
 }
+
 </style>
