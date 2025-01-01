@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@nuxt/icon": "^1.10.3",
+    "@nuxt/image": "^1.8.1",
     "@nuxtjs/tailwindcss": "^6.12.2",
     "dom-to-image": "^2.6.0",
     "html2canvas": "^1.4.1",
